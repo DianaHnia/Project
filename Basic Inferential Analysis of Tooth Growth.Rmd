@@ -1,0 +1,113 @@
+---
+title: "Basic Inferential Analysis of Tooth Growth of Guinea Pigs"
+output:
+  pdf_document: default
+  html_document: default
+---
+    
+by Diana Hanania     
+
+## Overview
+
+Basic inferential analysis is performed on the ToothGrowth data in the R datasets package. Basic analysis, confidence intervals and hypothesis tests were performed to compare tooth growth by supplement type and dose value and to know the effect of each on tooth growth.              
+
+## Basic Summary of the Data{#over}      
+
+Information about the dataset can be obtained using "help(ToothGrowth) in R. The following are quoted from the help file:       
+
+"The response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, orange juice or ascorbic acid (a form of vitamin C and coded as VC)"   
+
+"A data frame with 60 observations on 3 variables.
+
+* len:	numeric	Tooth length
+* supp:	factor	Supplement type (VC or OJ).
+* dose:	numeric	Dose in milligrams/day"     
+
+
+## Setting Glowbal Options     
+
+```{r}
+options(warn = -1)
+knitr::opts_chunk$set(comment = NA)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(opts.label="kill_prefix")
+knitr::opts_template$set("kill_prefix"=list(comment=NA, null_prefix=TRUE))
+knitr::opts_chunk$set(echo=TRUE)
+``` 
+## Loading Libraries
+
+```{r}
+library(tidyverse)
+```
+
+## Loading the Data and Exploratory Data Analysis
+
+Load the ToothGrowth data and perform some basic exploratory data analyses
+
+```{r, fig.cap="Figure 1: Boxplots showing the average and variation of tooth leangth of 60 guinea pigs given vitamin C at different doses and with different delivery methods"}
+data("ToothGrowth")
+head(ToothGrowth)
+dim(ToothGrowth)
+df <- ToothGrowth
+str(df)
+# transforming dose to factor for a better plotting
+df$dose<- as.factor(df$dose)
+df %>% ggplot(aes(dose,len,fill=supp)) + geom_boxplot(alpha=0.4) + theme_bw()+ 
+  labs(title = "Variation of Tooth Length as a Function of Dose and Delivery Method",
+       y="length",x=" vitamin C dose (mg/day)",
+       fill= str_wrap("Supplement Type/ Delivery Method",width=14),
+       caption="Note: OJ refers to orange juice and VC to ascorbic acid")+
+       theme(legend.title = element_text(size=9))
+  
+
+```
+
+
+In addition to the information listed in the [Basic Summary of the Data](#over), and after doing some exploratory data analysis, it appears from Figure 1 that  for the 2 lower doses,0.5mg/day and 1mg/day, the average tooth length and variation of the length is larger in the guinea pig group that took the vitamin through orange juice(OJ) than the group that took it through ascorbic acid(VC). On the other hand, for the 2mg/day dose, the average length was almost the same in the two groups however the variation of length in the group with orange juice(OJ) as a delivery method was less than that of the ascorbic acid(VC) method. Also, the rate of increase of length in the OJ group decreased as the dose increased, while the rate stayed almost constant in the VC group. This decrease invites us to do more tests and check if orange juice a better delivery method than ascorbic acid for all the different doses or only in the 0.5 mg/day and 1mg/day doses...             
+  
+The tooth length increases as the dose of the vitamin is increased in both groups with the different delivery methods.         
+
+
+## Confidence Intervals and Hypothesis Tests
+
+
+### Comparing tooth growth by supplement type      
+
+The T test is made for the two groups, one taking the vitamin trough orange juice (OJ) and the one taking the vitamin through ascorbic acid (VC). The aim of this test is to check if the orange juice (OJ) administration method is better than the other, ascorbic acid (VC) in its effect on tooth growth regardless of the value of the vitamin C dose (Alternative Hypothesis). Null Hypothesis: Both methods have same effect on tooth length regardless of the value of the vitamin C dose.      
+
+```{r}
+t.test(len~supp,data=df,paired=FALSE, var.equal = TRUE)$conf
+t.test(len~supp,data=df,paired=FALSE, var.equal = TRUE)$p.value
+```
+The 95% confidence interval returned from the above test contains the value "0" and the p-value is 0.06 > 0.05. As a result, the null hypothesis is accepted and the alternative hypothesis is rejected. 
+
+### Comparing tooth growth by dose       
+
+The T test is made again this time for the three groups taking different doses of vitamin C: 0.5 mg/da, 1mg/day,and 2mg/day. The aim of this test is to check if increasing the vitamin C dose results in an increase in tooth length(Alternative Hypothesis). Null Hypothesis: the increase in vitamin C dose does not affect the tooth length.         
+
+The first test involves comparing the lower 2 doses: 0.5mg/day and 1mg/day. 
+```{r}
+# comparing the lower 2 doses
+t.test(df$len[df$dose=="0.5"],df$len[df$dose=="1"],paired=FALSE, var.equal = TRUE)$conf
+t.test(df$len[df$dose=="0.5"],df$len[df$dose=="1"],paired=FALSE, var.equal = TRUE)$p.value
+```
+The 95% confidence interval returned from the above test does not contain the value "0" and the p-value is 1.266297e-07 < 0.05. As a result, the null hypothesis rejected and the alternative hypothesis is accepted.      
+
+The second test involves comparing the upper 2 doses: 1mg/day and 2mg/day.     
+```{r}
+# comparing the upper 2 doses
+t.test(df$len[df$dose=="1"],df$len[df$dose=="2"],paired=FALSE, var.equal = TRUE)$conf
+t.test(df$len[df$dose=="1"],df$len[df$dose=="2"],paired=FALSE, var.equal = TRUE)$p.value
+```
+The 95% confidence interval returned from the above test does not contain the value "0" and the p-value is 1.810829e-05 < 0.05. As a result, the null hypothesis rejected and the alternative hypothesis is again accepted.      
+
+
+## Conclusions
+
+The two different delivery methods/supplement types, orange juice(OJ) and ascorbic acid(VC), and for all the different vitamin C doses, do not affect the tooth length differently,i.e they both have the same effect on tooth length, yet orange juice at the low doses, 0.5mg/day and 1 mg/day, only showed to be better than ascorbic acid for tooth length. The increase in the dose in vitamin C given regardless of the delivery method increases the tooth length. These conclusions made are based on the **assumptions** that the guinea pigs are randomly selected for the experiment and for each group and are independent of each other.        
+        
+                
+                        
+                              
+                              
+
